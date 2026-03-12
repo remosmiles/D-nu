@@ -3,215 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Access | D. Management</title>
+    <title>Matrix - Daniela</title>
     <style>
-        :root {
-            --neon-cyan: #00f2ff;
-            --neon-red: #ff003c;
-            --bg-dark: #050505;
-        }
-
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--bg-dark);
-            color: #ffffff;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex; justify-content: center; align-items: center;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background-color: #000; /* Tiefschwarz für den Matrix-Effekt */
         }
 
-        /* Matrix Hintergrund-Effekt */
-        #matrix-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; opacity: 0.1; pointer-events: none;
-        }
-
-        .terminal {
-            position: relative; z-index: 10;
-            width: 90%; max-width: 500px;
-            background: rgba(10, 10, 10, 0.98);
-            border: 1px solid var(--neon-cyan);
-            border-radius: 5px;
-            padding: 40px;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-            text-align: center;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Wilder Modus: Roter Alarm-Look */
-        .terminal.wild-mode {
-            border-color: var(--neon-red);
-            box-shadow: 0 0 40px var(--neon-red);
-        }
-
-        h1 {
-            font-size: 1.4rem; color: var(--neon-cyan);
-            text-transform: uppercase; letter-spacing: 5px;
-            margin-bottom: 30px;
-        }
-
-        .wild-mode h1 { 
-            color: var(--neon-red); 
-            text-shadow: 0 0 10px var(--neon-red);
-            content: "DEEP SCAN ACTIVE";
-        }
-
-        .display-box {
-            min-height: 120px; background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #222; margin-bottom: 25px;
-            padding: 20px; display: flex; align-items: center;
-            justify-content: center; font-size: 1.1rem; line-height: 1.5;
-            transition: 0.3s;
-        }
-
-        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-
-        button {
-            background: transparent; border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan); padding: 10px 20px;
-            cursor: pointer; text-transform: uppercase; transition: 0.3s;
-            font-family: 'Courier New', monospace;
-        }
-
-        button:hover { background: var(--neon-cyan); color: #000; }
-
-        /* Getarnter Button */
-        .restricted-btn { border-color: #222 !important; color: #222 !important; }
-        .restricted-btn:hover { border-color: var(--neon-red) !important; color: var(--neon-red) !important; background: transparent !important; }
-
-        #pw-section {
-            display: none; margin-top: 20px; animation: fadeIn 0.5s;
-        }
-
-        input {
-            background: #000; border: 1px solid var(--neon-red);
-            color: var(--neon-red); padding: 10px; text-align: center;
-            outline: none; width: 100px; font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-        }
-
-        .footer {
-            margin-top: 35px; font-size: 0.8rem; color: #333;
-            border-top: 1px solid #111; padding-top: 20px;
-            transition: 0.5s;
-        }
-
-        .wild-mode .footer { color: var(--neon-red); opacity: 0.6; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .pulse { animation: pulse-red 2s infinite; }
-        @keyframes pulse-red {
-            0% { text-shadow: 0 0 5px var(--neon-red); }
-            50% { text-shadow: 0 0 20px var(--neon-red); }
-            100% { text-shadow: 0 0 5px var(--neon-red); }
+        canvas {
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="matrix-bg"></canvas>
-
-    <div class="terminal" id="main-terminal">
-        <h1 id="title">User: Dänu_Analytic</h1>
-        
-        <div class="display-box" id="output">
-            System bereit. Erwarte Autorisierung...
-        </div>
-
-        <div class="btn-group" id="main-btns">
-            <button onclick="runScan('standard')">Public Scan</button>
-            <button class="restricted-btn" onclick="showPw()">Restricted</button>
-        </div>
-
-        <div id="pw-section">
-            <p style="color: var(--neon-red); font-size: 0.7rem; margin-bottom: 10px;">ENTER ENCRYPTION KEY:</p>
-            <input type="password" id="pw-input" maxlength="4" placeholder="****">
-            <button onclick="checkPw()" style="border-color: var(--neon-red); color: var(--neon-red); margin-left: 10px;">Unlock</button>
-        </div>
-
-        <div class="footer" id="future-msg">
-            Ich freue mich auf alles, was auch immer kommen wird in der Zukunft.
-        </div>
-    </div>
+    <canvas id="matrixCanvas"></canvas>
 
     <script>
-        const standardContent = [
-            "Analyse: Eine Ausstrahlung, die das ganze Team bereichert.",
-            "Audio-Check: Dein Dialekt hat einen charmanten, positiven Klang.",
-            "Visual: Du siehst heute absolut wunderschön aus.",
-            "Status: Eine Kollegin mit besonderer Energie."
-        ];
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
 
-        const wildContent = [
-            "Deep Scan: Deine Stimme ist pure Verführung für mich.",
-            "Warnung: Die Spannung zwischen uns ist kaum noch kontrollierbar.",
-            "Privat-Log: Dieses Geheimnis mit dir ist das Highlight meines Tages.",
-            "Status: Dein Dialekt macht mich verrückt, wenn wir alleine sind.",
-            "Vertraulich: Du bist wunderschön – und du weißt, was du in mir auslöst.",
-            "Analyse: Ich genieße jede Sekunde dieses Knisterns mit dir."
-        ];
+        // Setze Canvas-Größe auf die volle Fenstergröße
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        function runScan(mode) {
-            const output = document.getElementById('output');
-            output.innerText = "Scanning...";
-            output.style.color = "#666";
+        // Die Zeichen, die im Regen verwendet werden (Katakana + Lateinisch + Zahlen)
+        const characters = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const charArray = characters.split('');
 
-            setTimeout(() => {
-                const list = mode === 'standard' ? standardContent : wildContent;
-                output.innerText = list[Math.floor(Math.random() * list.length)];
+        const fontSize = 16;
+        // Berechne die Anzahl der Spalten basierend auf der Fensterbreite
+        const columns = canvas.width / fontSize;
+
+        // Ein Array, um die y-Koordinate für jede Spalte zu speichern
+        const drops = [];
+        // Initialisiere die Tropfen-Positionen (alle starten oben)
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        // Das Wort, das am Ende stehen bleiben soll
+        const targetWord = "Daniela";
+        const targetArray = targetWord.split('');
+
+        // Berechne die Startposition für den Namen, um ihn zu zentrieren
+        const namePixelWidth = targetArray.length * fontSize;
+        const startX = (canvas.width - namePixelWidth) / 2;
+        const nameY = canvas.height / 2; // Vertikal zentriert
+
+        // Bestimme, welche Spalten für den Namen verwendet werden
+        const nameColumnIndices = [];
+        for (let i = 0; i < targetArray.length; i++) {
+            const colIndex = Math.floor((startX + i * fontSize) / fontSize);
+            nameColumnIndices.push(colIndex);
+        }
+
+        let animationActive = true;
+        const animationDuration = 6000; // Dauer des Regens in Millisekunden (6 Sekunden)
+        const startTime = Date.now();
+
+        // Die Haupt-Zeichenfunktion
+        function draw() {
+            // Ein leicht transparenter schwarzer Hintergrund erzeugt den "Nachzieheffekt"
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Setze die Farbe für die fallenden Zeichen (Klassisches Matrix-Grün)
+            ctx.fillStyle = '#0F0'; 
+            ctx.font = fontSize + 'px monospace';
+
+            // Loope über alle Spalten
+            for (let i = 0; i < drops.length; i++) {
+                // Wähle ein zufälliges Zeichen
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
                 
-                if(mode === 'standard') {
-                    output.style.color = "var(--neon-cyan)";
-                    output.classList.remove('pulse');
-                } else {
-                    output.style.color = "var(--neon-red)";
-                    output.classList.add('pulse');
+                // Zeichne das Zeichen an der aktuellen x- und y-Position
+                // i*fontSize = x-Koordinate, drops[i]*fontSize = y-Koordinate
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Wenn der Tropfen unten angekommen ist, setze ihn zufällig zurück nach oben
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
                 }
-            }, 700);
-        }
 
-        function showPw() {
-            document.getElementById('main-btns').style.display = 'none';
-            document.getElementById('pw-section').style.display = 'block';
-            document.getElementById('pw-input').focus();
-        }
+                // Bewege den Tropfen nach unten
+                drops[i]++;
+            }
 
-        function checkPw() {
-            const pw = document.getElementById('pw-input').value;
-            const terminal = document.getElementById('main-terminal');
-            const title = document.getElementById('title');
-            
-            if(pw === "0505") { // DEIN PASSWORT (hier ändern falls gewünscht)
-                document.getElementById('pw-section').style.display = 'none';
-                document.getElementById('main-btns').style.display = 'flex';
-                terminal.classList.add('wild-mode');
-                title.innerText = "DEEP SCAN ACTIVE";
-                runScan('wild');
-            } else {
-                document.getElementById('output').innerText = "ACCESS DENIED. System Lockdown.";
-                document.getElementById('output').style.color = "red";
-                setTimeout(() => location.reload(), 2000);
+            // Prüfe, ob die Zeit für den Regen vorbei ist
+            if (Date.now() - startTime > animationDuration) {
+                animationActive = false;
+                clearInterval(matrixInterval); // Stoppe den Regen
+                finalizeName(); // Zeige den Namen statisch an
             }
         }
 
-        // Matrix Hintergrund
-        const canvas = document.getElementById('matrix-bg');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const drops = Array(Math.floor(canvas.width / 15)).fill(1);
+        // Funktion, um den Namen am Ende statisch und hell anzuzeigen
+        function finalizeName() {
+            // Male den Hintergrund einmal komplett Schwarz, um den Regen zu löschen
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#0ff"; ctx.font = "15px monospace";
-            drops.forEach((y, i) => {
-                const text = Math.floor(Math.random()*2);
-                ctx.fillText(text, i * 15, y * 15);
-                if (y * 15 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            });
+            // Setze die Farbe für den Namen (Helleres Grün/Weiß für Fokus)
+            ctx.fillStyle = '#FFF'; // Reines Weiß für maximalen Kontrast
+            ctx.font = 'bold ' + (fontSize * 3) + 'px Courier New'; // Größere, fette Schrift
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Füge einen Glüh-Effekt hinzu
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#0F0';
+
+            // Zeichne den zentrierten Namen
+            ctx.fillText(targetWord, canvas.width / 2, canvas.height / 2);
         }
-        setInterval(drawMatrix, 50);
+
+        // Starte die Animation (ca. 30 Bilder pro Sekunde)
+        let matrixInterval = setInterval(draw, 33);
+
+        // Passe die Canvas-Größe an, wenn sich das Fenster ändert
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Falls die Animation schon vorbei ist, zeichne den Namen neu
+            if (!animationActive) {
+                finalizeName();
+            } else {
+                // Sonst setze die Spalten neu auf (Regen startet quasi neu)
+                const columns = canvas.width / fontSize;
+                for (let x = 0; x < columns; x++) {
+                    drops[x] = 1;
+                }
+            }
+        });
+
     </script>
 </body>
 </html>
