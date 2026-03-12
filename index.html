@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dänus Tech-Station</title>
+    <style>
+        :root {
+            --neon-cyan: #00e5ff;
+            --neon-purple: #9d00ff;
+            --dark-bg: #050505;
+        }
+        body {
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .terminal {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 20px var(--neon-cyan), inset 0 0 10px rgba(0, 229, 255, 0.2);
+            text-align: center;
+        }
+        h1 {
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .display-box {
+            min-height: 100px;
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px dashed var(--neon-purple);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #fff;
+            text-shadow: 0 0 5px var(--neon-purple);
+        }
+        button {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px 30px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.4s;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: var(--neon-cyan);
+            color: black;
+            box-shadow: 0 0 30px var(--neon-cyan);
+        }
+        .future-text {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #888;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal">
+        <h1>Dänu Analysis V1.0</h1>
+        
+        <div class="display-box" id="output">
+            Klicke auf den Button für eine Analyse...
+        </div>
+
+        <button onclick="analyze()">Scan Starten</button>
+
+        <div class="future-text">
+            Ich freue mich auf alles, was die Zukunft bringt! 🚀
+        </div>
+    </div>
+
+    <script>
+        const facts = [
+            "Analyse abgeschlossen: Du siehst heute absolut fantastisch aus! ✨",
+            "Audio-Check: Dein Dialekt ist einfach charmant und macht jede Unterhaltung besser. 🎙️",
+            "System-Info: Deine Stimme hat eine unglaublich angenehme und anziehende Energie. 🔊",
+            "Visuelles Update: Deine Ausstrahlung bringt echtes Licht in das Büro! 🌟",
+            "Dänu-Fakt: Wunderschön, kompetent und ein toller Klang in der Stimme – 10/10 Punkte! ✅",
+            "Prognose: Die Zusammenarbeit mit dir wird eines der Highlights der nächsten Zeit. 📈"
+        ];
+
+        function analyze() {
+            const output = document.getElementById('output');
+            output.innerText = "Scanning...";
+            
+            setTimeout(() => {
+                const randomFact = facts[Math.floor(Math.random() * facts.length)];
+                output.innerText = randomFact;
+            }, 800);
+        }
+    </script>
+</body>
+</html>
