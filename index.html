@@ -3,115 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dänus Tech-Station</title>
+    <title>Terminal Access | D. Management</title>
     <style>
         :root {
-            --neon-cyan: #00e5ff;
-            --neon-purple: #9d00ff;
-            --dark-bg: #050505;
+            --neon-cyan: #00f2ff;
+            --neon-red: #ff003c;
+            --bg-dark: #050505;
         }
-        body {
-            background-color: var(--dark-bg);
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex; justify-content: center; align-items: center;
             overflow: hidden;
         }
+
+        /* Matrix Hintergrund-Effekt */
+        #matrix-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; opacity: 0.1; pointer-events: none;
+        }
+
         .terminal {
-            width: 90%;
-            max-width: 500px;
-            background: rgba(10, 10, 10, 0.9);
+            position: relative; z-index: 10;
+            width: 90%; max-width: 500px;
+            background: rgba(10, 10, 10, 0.98);
             border: 1px solid var(--neon-cyan);
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 0 20px var(--neon-cyan), inset 0 0 10px rgba(0, 229, 255, 0.2);
-            text-align: center;
-        }
-        h1 {
-            color: var(--neon-cyan);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-        .display-box {
-            min-height: 100px;
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px dashed var(--neon-purple);
             border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-style: italic;
-            font-size: 1.1rem;
-            color: #fff;
-            text-shadow: 0 0 5px var(--neon-purple);
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+            text-align: center;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* Wilder Modus: Roter Alarm-Look */
+        .terminal.wild-mode {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 40px var(--neon-red);
+        }
+
+        h1 {
+            font-size: 1.4rem; color: var(--neon-cyan);
+            text-transform: uppercase; letter-spacing: 5px;
+            margin-bottom: 30px;
+        }
+
+        .wild-mode h1 { 
+            color: var(--neon-red); 
+            text-shadow: 0 0 10px var(--neon-red);
+            content: "DEEP SCAN ACTIVE";
+        }
+
+        .display-box {
+            min-height: 120px; background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #222; margin-bottom: 25px;
+            padding: 20px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.1rem; line-height: 1.5;
+            transition: 0.3s;
+        }
+
+        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+
         button {
-            background: transparent;
-            border: 2px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-            padding: 12px 30px;
-            font-size: 1rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.4s;
-            border-radius: 4px;
+            background: transparent; border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan); padding: 10px 20px;
+            cursor: pointer; text-transform: uppercase; transition: 0.3s;
+            font-family: 'Courier New', monospace;
         }
-        button:hover {
-            background: var(--neon-cyan);
-            color: black;
-            box-shadow: 0 0 30px var(--neon-cyan);
+
+        button:hover { background: var(--neon-cyan); color: #000; }
+
+        /* Getarnter Button */
+        .restricted-btn { border-color: #222 !important; color: #222 !important; }
+        .restricted-btn:hover { border-color: var(--neon-red) !important; color: var(--neon-red) !important; background: transparent !important; }
+
+        #pw-section {
+            display: none; margin-top: 20px; animation: fadeIn 0.5s;
         }
-        .future-text {
-            margin-top: 25px;
-            font-size: 0.9rem;
-            color: #888;
-            border-top: 1px solid #333;
-            padding-top: 15px;
+
+        input {
+            background: #000; border: 1px solid var(--neon-red);
+            color: var(--neon-red); padding: 10px; text-align: center;
+            outline: none; width: 100px; font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+        }
+
+        .footer {
+            margin-top: 35px; font-size: 0.8rem; color: #333;
+            border-top: 1px solid #111; padding-top: 20px;
+            transition: 0.5s;
+        }
+
+        .wild-mode .footer { color: var(--neon-red); opacity: 0.6; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .pulse { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red {
+            0% { text-shadow: 0 0 5px var(--neon-red); }
+            50% { text-shadow: 0 0 20px var(--neon-red); }
+            100% { text-shadow: 0 0 5px var(--neon-red); }
         }
     </style>
 </head>
 <body>
 
-    <div class="terminal">
-        <h1>Dänu Analysis V1.0</h1>
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="terminal" id="main-terminal">
+        <h1 id="title">User: Dänu_Analytic</h1>
         
         <div class="display-box" id="output">
-            Klicke auf den Button für eine Analyse...
+            System bereit. Erwarte Autorisierung...
         </div>
 
-        <button onclick="analyze()">Scan Starten</button>
+        <div class="btn-group" id="main-btns">
+            <button onclick="runScan('standard')">Public Scan</button>
+            <button class="restricted-btn" onclick="showPw()">Restricted</button>
+        </div>
 
-        <div class="future-text">
-            Ich freue mich auf alles, was die Zukunft bringt! 🚀
+        <div id="pw-section">
+            <p style="color: var(--neon-red); font-size: 0.7rem; margin-bottom: 10px;">ENTER ENCRYPTION KEY:</p>
+            <input type="password" id="pw-input" maxlength="4" placeholder="****">
+            <button onclick="checkPw()" style="border-color: var(--neon-red); color: var(--neon-red); margin-left: 10px;">Unlock</button>
+        </div>
+
+        <div class="footer" id="future-msg">
+            Ich freue mich auf alles, was auch immer kommen wird in der Zukunft.
         </div>
     </div>
 
     <script>
-        const facts = [
-            "Analyse abgeschlossen: Du siehst heute absolut fantastisch aus! ✨",
-            "Audio-Check: Dein Dialekt ist einfach charmant und macht jede Unterhaltung besser. 🎙️",
-            "System-Info: Deine Stimme hat eine unglaublich angenehme und anziehende Energie. 🔊",
-            "Visuelles Update: Deine Ausstrahlung bringt echtes Licht in das Büro! 🌟",
-            "Dänu-Fakt: Wunderschön, kompetent und ein toller Klang in der Stimme – 10/10 Punkte! ✅",
-            "Prognose: Die Zusammenarbeit mit dir wird eines der Highlights der nächsten Zeit. 📈"
+        const standardContent = [
+            "Analyse: Eine Ausstrahlung, die das ganze Team bereichert.",
+            "Audio-Check: Dein Dialekt hat einen charmanten, positiven Klang.",
+            "Visual: Du siehst heute absolut wunderschön aus.",
+            "Status: Eine Kollegin mit besonderer Energie."
         ];
 
-        function analyze() {
+        const wildContent = [
+            "Deep Scan: Deine Stimme ist pure Verführung für mich.",
+            "Warnung: Die Spannung zwischen uns ist kaum noch kontrollierbar.",
+            "Privat-Log: Dieses Geheimnis mit dir ist das Highlight meines Tages.",
+            "Status: Dein Dialekt macht mich verrückt, wenn wir alleine sind.",
+            "Vertraulich: Du bist wunderschön – und du weißt, was du in mir auslöst.",
+            "Analyse: Ich genieße jede Sekunde dieses Knisterns mit dir."
+        ];
+
+        function runScan(mode) {
             const output = document.getElementById('output');
             output.innerText = "Scanning...";
-            
+            output.style.color = "#666";
+
             setTimeout(() => {
-                const randomFact = facts[Math.floor(Math.random() * facts.length)];
-                output.innerText = randomFact;
-            }, 800);
+                const list = mode === 'standard' ? standardContent : wildContent;
+                output.innerText = list[Math.floor(Math.random() * list.length)];
+                
+                if(mode === 'standard') {
+                    output.style.color = "var(--neon-cyan)";
+                    output.classList.remove('pulse');
+                } else {
+                    output.style.color = "var(--neon-red)";
+                    output.classList.add('pulse');
+                }
+            }, 700);
         }
+
+        function showPw() {
+            document.getElementById('main-btns').style.display = 'none';
+            document.getElementById('pw-section').style.display = 'block';
+            document.getElementById('pw-input').focus();
+        }
+
+        function checkPw() {
+            const pw = document.getElementById('pw-input').value;
+            const terminal = document.getElementById('main-terminal');
+            const title = document.getElementById('title');
+            
+            if(pw === "0505") { // DEIN PASSWORT (hier ändern falls gewünscht)
+                document.getElementById('pw-section').style.display = 'none';
+                document.getElementById('main-btns').style.display = 'flex';
+                terminal.classList.add('wild-mode');
+                title.innerText = "DEEP SCAN ACTIVE";
+                runScan('wild');
+            } else {
+                document.getElementById('output').innerText = "ACCESS DENIED. System Lockdown.";
+                document.getElementById('output').style.color = "red";
+                setTimeout(() => location.reload(), 2000);
+            }
+        }
+
+        // Matrix Hintergrund
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const drops = Array(Math.floor(canvas.width / 15)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0ff"; ctx.font = "15px monospace";
+            drops.forEach((y, i) => {
+                const text = Math.floor(Math.random()*2);
+                ctx.fillText(text, i * 15, y * 15);
+                if (y * 15 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(drawMatrix, 50);
     </script>
 </body>
 </html>
