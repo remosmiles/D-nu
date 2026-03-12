@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Crystallization - Daniela</title>
+    <title>Matrix Name Crystallization - BIG & BOLD</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -19,58 +19,63 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        // Canvas-Größe an Fenster anpassen
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
-        const fontSize = 25; // Größer für bessere Sichtbarkeit des Namens
-        const columns = Math.floor(canvas.width / fontSize);
-        const drops = Array(columns).fill(0).map(() => Math.random() * -100);
-
-        // Konfiguration des Namens
+        // --- KONFIGURATION ---
         const name = "DANIELA";
-        const nameStartCol = Math.floor((columns - name.length) / 2);
-        const nameRow = Math.floor((canvas.height / fontSize) / 2);
+        
+        // Schriftgrößen
+        const rainFontSize = 20;   // Größe des normalen Regens
+        const nameFontSize = 80;   // Größe des Namens (VIEL GRÖSSER!)
+        
+        // Farben und Leuchteffekte
+        const rainColor = "#0f0";      // Klassisches Matrix-Grün
+        const nameColor = "#fff";      // Kernfarbe des Namens (Weiß für Leuchten)
+        const nameGlowColor = "#0f0";  // Farbe des Leuchtens (Grün)
+
+        // --- SETUP ---
+        const columns = Math.floor(canvas.width / rainFontSize);
+        // Regentropfen starten zufällig weit oben
+        const drops = Array(columns).fill(0).map(() => Math.random() * -canvas.height / rainFontSize);
+        
+        const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$+-*/=%\"'#&_(),.;:?!\\|{}<>[]アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
+
+        // Position des Namens berechnen (Zentriert)
+        ctx.font = `bold ${nameFontSize}px Arial, sans-serif`; // Kurz setzen für Messung
+        const nameMetrics = ctx.measureText(name);
+        const nameWidth = nameMetrics.width;
+        
+        const nameX = (canvas.width - nameWidth) / 2;
+        const nameY = canvas.height / 2; // Vertikal zentriert
 
         // Speichert, welche Buchstaben bereits "kristallisiert" sind
         const crystallized = Array(name.length).fill(false);
+        // Zeitstempel, wann der Name vollständig war
+        let nameCompleteTime = null; 
 
-        const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$+-*/=%\"'#&_(),.;:?!\\|{}<>[]";
-
+        // --- HAUPT-ANIMATIONS-LOOP ---
         function draw() {
-            // Matrix-Nachzieheffekt
+            // Matrix-Nachzieheffekt (Hintergrund leicht abdunkeln)
             ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.font = `bold ${fontSize}px monospace`;
+            // 1. ZUERST DEN NORMALEN REGEN ZEICHNEN
+            ctx.font = `${rainFontSize}px monospace`;
+            ctx.fillStyle = rainColor;
 
             for (let i = 0; i < drops.length; i++) {
-                let x = i * fontSize;
-                let y = drops[i] * fontSize;
+                let x = i * rainFontSize;
+                let y = drops[i] * rainFontSize;
 
-                // Prüfen, ob diese Spalte zu einem Buchstaben von "DANIELA" gehört
-                let nameCharIndex = i - nameStartCol;
-                let isNameColumn = nameCharIndex >= 0 && nameCharIndex < name.length;
-
-                if (isNameColumn && Math.floor(drops[i]) === nameRow) {
-                    // Der Moment der Kristallisation:
-                    // Wir zeichnen den finalen Buchstaben in hellem Weiß/Neon
-                    ctx.fillStyle = "#fff";
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = "#0f0";
-                    ctx.fillText(name[nameCharIndex], x, nameRow * fontSize);
-                    ctx.shadowBlur = 0; // Reset für andere Zeichen
-                    
-                    crystallized[nameCharIndex] = true;
-                    
-                    // Der "Regen-Tropfen" fällt einfach weiter durch
-                    ctx.fillStyle = "#0f0";
-                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, y);
-                } else {
-                    // Normaler Regen
-                    ctx.fillStyle = "#0f0";
-                    let char = chars[Math.floor(Math.random() * chars.length)];
-                    ctx.fillText(char, x, y);
-                }
+                // Zufälliges Zeichen auswählen
+                let char = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(char, x, y);
 
                 // Wenn der Regen unten rausfällt, oben neu anfangen
                 if (y > canvas.height && Math.random() > 0.975) {
@@ -78,30 +83,74 @@
                 }
 
                 // Geschwindigkeit des Regens
-                drops[i] += 0.5;
+                drops[i] += 0.75;
             }
 
-            // Bereits kristallisierte Buchstaben dauerhaft stehen lassen
+            // 2. DEN GROSSEN NAMEN ZEICHNEN UND KRISTALLISIEREN LASSEN
+            ctx.font = `bold ${nameFontSize}px Arial, sans-serif`; // Dicke, serifenlose Schrift
+            ctx.textAlign = "left"; // Wichtig für korrekte Positionierung
+            ctx.textBaseline = "middle"; // Vertikale Ausrichtung
+
             for (let j = 0; j < name.length; j++) {
-                if (crystallized[j]) {
-                    ctx.fillStyle = "#fff";
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = "#0f0";
-                    ctx.fillText(name[j], (nameStartCol + j) * fontSize, nameRow * fontSize);
-                    ctx.shadowBlur = 0;
+                let charX = nameX + (j * (nameWidth / name.length)); // X-Position für jeden Buchstaben
+                let charY = nameY;
+
+                // PRÜFEN, OB EIN REGENTROPFEN DIESE STELLE PASSIERT
+                // Wir schauen, ob irgendein Tropfen in der Nähe der Y-Position des Namens ist
+                for (let k = 0; k < drops.length; k++) {
+                    let rainX = k * rainFontSize;
+                    let rainY = drops[k] * rainFontSize;
+
+                    // Wenn ein Tropfen horizontal und vertikal in der Nähe ist
+                    if (!crystallized[j] && 
+                        Math.abs(rainX - charX) < nameFontSize / 2 && 
+                        Math.abs(rainY - charY) < nameFontSize / 2) {
+                        crystallized[j] = true; // Buchstabe kristallisiert!
+                    }
                 }
+
+                // WENN KRISTALLISIERT, DEN BUCHSTABEN ZEICHNEN
+                if (crystallized[j]) {
+                    // Starker mehrschichtiger Leuchteffekt
+                    ctx.fillStyle = nameColor;
+                    
+                    // Äußerer Glanz
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = nameGlowColor;
+                    ctx.fillText(name[j], charX, charY);
+
+                    // Mittlerer Glanz (für mehr Dichte)
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = nameGlowColor;
+                    ctx.fillText(name[j], charX, charY);
+
+                    // Innerer Glanz (nahe am Buchstaben)
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = "#fff"; // Weißer Kern
+                    ctx.fillText(name[j], charX, charY);
+
+                    // Schattenwurf zurücksetzen für andere Zeichen
+                    ctx.shadowBlur = 0; 
+                }
+            }
+
+            // Prüfen, ob der Name vollständig ist
+            if (crystallized.every(c => c) && nameCompleteTime === null) {
+                nameCompleteTime = Date.now();
+            }
+
+            // NACHRICHT AM ENDE (Optional)
+            if (nameCompleteTime && Date.now() - nameCompleteTime > 3000) {
+                 ctx.font = `italic ${rainFontSize}px monospace`;
+                 ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+                 ctx.textAlign = "center";
+                 ctx.fillText("...system complete.", canvas.width / 2, nameY + nameFontSize);
             }
 
             requestAnimationFrame(draw);
         }
 
         draw();
-
-        window.onresize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            // Neukalkulation der Spalten bei Resize könnte hier folgen
-        };
     </script>
 </body>
 </html>
