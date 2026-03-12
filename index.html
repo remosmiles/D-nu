@@ -3,144 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix - Daniela</title>
+    <title>Matrix Crystallization - Daniela</title>
     <style>
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000; /* Tiefschwarz für den Matrix-Effekt */
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #000;
         }
-
-        canvas {
-            display: block;
-        }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-
-    <canvas id="matrixCanvas"></canvas>
+    <canvas id="canvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('matrixCanvas');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        // Setze Canvas-Größe auf die volle Fenstergröße
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Die Zeichen, die im Regen verwendet werden (Katakana + Lateinisch + Zahlen)
-        const characters = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const charArray = characters.split('');
+        const fontSize = 25; // Größer für bessere Sichtbarkeit des Namens
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(0).map(() => Math.random() * -100);
 
-        const fontSize = 16;
-        // Berechne die Anzahl der Spalten basierend auf der Fensterbreite
-        const columns = canvas.width / fontSize;
+        // Konfiguration des Namens
+        const name = "DANIELA";
+        const nameStartCol = Math.floor((columns - name.length) / 2);
+        const nameRow = Math.floor((canvas.height / fontSize) / 2);
 
-        // Ein Array, um die y-Koordinate für jede Spalte zu speichern
-        const drops = [];
-        // Initialisiere die Tropfen-Positionen (alle starten oben)
-        for (let x = 0; x < columns; x++) {
-            drops[x] = 1;
-        }
+        // Speichert, welche Buchstaben bereits "kristallisiert" sind
+        const crystallized = Array(name.length).fill(false);
 
-        // Das Wort, das am Ende stehen bleiben soll
-        const targetWord = "Daniela";
-        const targetArray = targetWord.split('');
+        const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$+-*/=%\"'#&_(),.;:?!\\|{}<>[]";
 
-        // Berechne die Startposition für den Namen, um ihn zu zentrieren
-        const namePixelWidth = targetArray.length * fontSize;
-        const startX = (canvas.width - namePixelWidth) / 2;
-        const nameY = canvas.height / 2; // Vertikal zentriert
-
-        // Bestimme, welche Spalten für den Namen verwendet werden
-        const nameColumnIndices = [];
-        for (let i = 0; i < targetArray.length; i++) {
-            const colIndex = Math.floor((startX + i * fontSize) / fontSize);
-            nameColumnIndices.push(colIndex);
-        }
-
-        let animationActive = true;
-        const animationDuration = 6000; // Dauer des Regens in Millisekunden (6 Sekunden)
-        const startTime = Date.now();
-
-        // Die Haupt-Zeichenfunktion
         function draw() {
-            // Ein leicht transparenter schwarzer Hintergrund erzeugt den "Nachzieheffekt"
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            // Matrix-Nachzieheffekt
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Setze die Farbe für die fallenden Zeichen (Klassisches Matrix-Grün)
-            ctx.fillStyle = '#0F0'; 
-            ctx.font = fontSize + 'px monospace';
+            ctx.font = `bold ${fontSize}px monospace`;
 
-            // Loope über alle Spalten
             for (let i = 0; i < drops.length; i++) {
-                // Wähle ein zufälliges Zeichen
-                const text = charArray[Math.floor(Math.random() * charArray.length)];
-                
-                // Zeichne das Zeichen an der aktuellen x- und y-Position
-                // i*fontSize = x-Koordinate, drops[i]*fontSize = y-Koordinate
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                let x = i * fontSize;
+                let y = drops[i] * fontSize;
 
-                // Wenn der Tropfen unten angekommen ist, setze ihn zufällig zurück nach oben
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                // Prüfen, ob diese Spalte zu einem Buchstaben von "DANIELA" gehört
+                let nameCharIndex = i - nameStartCol;
+                let isNameColumn = nameCharIndex >= 0 && nameCharIndex < name.length;
+
+                if (isNameColumn && Math.floor(drops[i]) === nameRow) {
+                    // Der Moment der Kristallisation:
+                    // Wir zeichnen den finalen Buchstaben in hellem Weiß/Neon
+                    ctx.fillStyle = "#fff";
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = "#0f0";
+                    ctx.fillText(name[nameCharIndex], x, nameRow * fontSize);
+                    ctx.shadowBlur = 0; // Reset für andere Zeichen
+                    
+                    crystallized[nameCharIndex] = true;
+                    
+                    // Der "Regen-Tropfen" fällt einfach weiter durch
+                    ctx.fillStyle = "#0f0";
+                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, y);
+                } else {
+                    // Normaler Regen
+                    ctx.fillStyle = "#0f0";
+                    let char = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(char, x, y);
+                }
+
+                // Wenn der Regen unten rausfällt, oben neu anfangen
+                if (y > canvas.height && Math.random() > 0.975) {
                     drops[i] = 0;
                 }
 
-                // Bewege den Tropfen nach unten
-                drops[i]++;
+                // Geschwindigkeit des Regens
+                drops[i] += 0.5;
             }
 
-            // Prüfe, ob die Zeit für den Regen vorbei ist
-            if (Date.now() - startTime > animationDuration) {
-                animationActive = false;
-                clearInterval(matrixInterval); // Stoppe den Regen
-                finalizeName(); // Zeige den Namen statisch an
-            }
-        }
-
-        // Funktion, um den Namen am Ende statisch und hell anzuzeigen
-        function finalizeName() {
-            // Male den Hintergrund einmal komplett Schwarz, um den Regen zu löschen
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Setze die Farbe für den Namen (Helleres Grün/Weiß für Fokus)
-            ctx.fillStyle = '#FFF'; // Reines Weiß für maximalen Kontrast
-            ctx.font = 'bold ' + (fontSize * 3) + 'px Courier New'; // Größere, fette Schrift
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            // Füge einen Glüh-Effekt hinzu
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#0F0';
-
-            // Zeichne den zentrierten Namen
-            ctx.fillText(targetWord, canvas.width / 2, canvas.height / 2);
-        }
-
-        // Starte die Animation (ca. 30 Bilder pro Sekunde)
-        let matrixInterval = setInterval(draw, 33);
-
-        // Passe die Canvas-Größe an, wenn sich das Fenster ändert
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            // Falls die Animation schon vorbei ist, zeichne den Namen neu
-            if (!animationActive) {
-                finalizeName();
-            } else {
-                // Sonst setze die Spalten neu auf (Regen startet quasi neu)
-                const columns = canvas.width / fontSize;
-                for (let x = 0; x < columns; x++) {
-                    drops[x] = 1;
+            // Bereits kristallisierte Buchstaben dauerhaft stehen lassen
+            for (let j = 0; j < name.length; j++) {
+                if (crystallized[j]) {
+                    ctx.fillStyle = "#fff";
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = "#0f0";
+                    ctx.fillText(name[j], (nameStartCol + j) * fontSize, nameRow * fontSize);
+                    ctx.shadowBlur = 0;
                 }
             }
-        });
 
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+
+        window.onresize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Neukalkulation der Spalten bei Resize könnte hier folgen
+        };
     </script>
 </body>
 </html>
